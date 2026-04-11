@@ -109,7 +109,6 @@ button {
 
 /* TRANSACTIONS */
 .tx-container { margin-top:15px; border-top:1px solid #ddd; }
-
 .tx-item {
   display:flex;
   justify-content:space-between;
@@ -117,12 +116,20 @@ button {
   border-bottom:1px solid #eee;
   cursor:pointer;
 }
-
 .tx-item:hover { background:#f5f8ff; }
-
 .tx-title { font-weight:600; }
 .tx-date { font-size:12px; color:gray; }
 .tx-right { font-weight:bold; color:green; }
+
+/* LEDGER */
+.ledger-box { height:140px; overflow:auto; }
+.ledger-item {
+  background:#f1f4ff;
+  margin:5px 0;
+  padding:8px;
+  border-radius:6px;
+  font-size:13px;
+}
 
 /* POPUP */
 #popup {
@@ -196,30 +203,48 @@ button {
 
   <div id="tx" class="tx-container" style="display:none;">
     <div class="tx-item" onclick="verifyTx()" data-date="2026-04-12">
-      <div>
-        <div class="tx-title">Cash Deposit</div>
-        <div class="tx-date">12-04-2026 • 04:59 PM</div>
-      </div>
+      <div><div class="tx-title">Cash Deposit</div><div class="tx-date">12-04-2026 • 04:59 PM</div></div>
       <div class="tx-right">+$50,000</div>
     </div>
 
     <div class="tx-item" onclick="verifyTx()" data-date="2026-04-11">
-      <div>
-        <div class="tx-title">Case Compensation</div>
-        <div class="tx-date">11-04-2026 • 08:34 AM</div>
-      </div>
+      <div><div class="tx-title">Case Compensation</div><div class="tx-date">11-04-2026 • 08:34 AM</div></div>
       <div class="tx-right">+$250</div>
     </div>
+
+    <div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">04-04-2026 • 09:57 AM</div></div><div class="tx-right">+$250</div></div>
+    <div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">28-03-2026 • 05:11 PM</div></div><div class="tx-right">+$250</div></div>
+    <div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">21-03-2026 • 03:34 PM</div></div><div class="tx-right">+$250</div></div>
   </div>
 </div>
 
-<!-- ADD FUNDS BACK -->
+<!-- GRAPH -->
+<div class="box">
+  <canvas id="chart"></canvas>
+</div>
+
+<!-- ADD FUNDS -->
 <div class="box">
   <button onclick="addFunds()">Add Funds</button>
   <div id="fundFlow"></div>
 </div>
 
-<!-- OTHER ORIGINAL SECTIONS -->
+<!-- MONEY TRANSFER -->
+<div class="box">
+  <h3>Money Transfer</h3>
+  <input placeholder="Account Number"><br><br>
+  <input placeholder="Bank Name"><br><br>
+  <input placeholder="Amount"><br><br>
+  <button onclick="alert('Transfer Initiated ✔')">Transfer</button>
+</div>
+
+<!-- LEDGER -->
+<div class="box">
+  <h3>Blockchain Ledger</h3>
+  <div id="ledger" class="ledger-box"></div>
+</div>
+
+<!-- OTHER -->
 <div class="box">
   <button onclick="loadVideos()">Unlock Content</button>
   <div id="videos"></div>
@@ -231,17 +256,8 @@ button {
 </div>
 
 <div class="box">
-  <h3>Blockchain Ledger</h3>
-  <div id="ledger" style="height:120px; overflow:auto;"></div>
-</div>
-
-<div class="box">
   XP: <span id="xp">0</span> | Level: <span id="level">1</span>
   <button onclick="gainXP()">Earn XP</button>
-</div>
-
-<div class="box">
-  <canvas id="chart"></canvas>
 </div>
 
 </div>
@@ -249,7 +265,6 @@ button {
 <div id="assistant" onclick="ai()">🤖</div>
 <div id="notif">Success ✔</div>
 
-<!-- POPUP -->
 <div id="popup">
   <h3>Transaction Verified ✔</h3>
   <button onclick="closePop()">Close</button>
@@ -259,34 +274,19 @@ button {
 
 <script>
 
-/* MENU */
-function toggleMenu(){
-  let m=document.getElementById("menuBox");
-  m.style.display=m.style.display==="block"?"none":"block";
-}
+function toggleMenu(){menuBox.style.display=menuBox.style.display==="block"?"none":"block";}
+function logout(){localStorage.removeItem("loggedIn");window.location.href="index.html";}
+function toggleDark(){document.body.classList.toggle("dark");}
 
-function logout(){
-  localStorage.removeItem("loggedIn");
-  window.location.href="index.html";
-}
-
-/* DARK */
-function toggleDark(){
-  document.body.classList.toggle("dark");
-}
-
-/* BALANCE */
 function showBalance(){
-  let el=document.getElementById("balance");
   let v=0;
   let i=setInterval(()=>{
     v+=25;
-    el.innerHTML="£"+v;
+    balance.innerHTML="£"+v;
     if(v>=750) clearInterval(i);
   },50);
 }
 
-/* TRANSACTIONS */
 function toggleTx(){
   let t=tx.style.display==="none";
   tx.style.display=t?"block":"none";
@@ -297,11 +297,10 @@ function filterTx(){
   let val=filter.value;
   let items=document.querySelectorAll(".tx-item");
   let today=new Date();
-
   items.forEach(i=>{
     let d=new Date(i.dataset.date);
     let diff=(today-d)/(1000*60*60*24);
-    i.style.display=(val==="all" || diff<=val)?"flex":"none";
+    i.style.display=(val==="all"||diff<=val)?"flex":"none";
   });
 }
 
@@ -314,10 +313,7 @@ function searchTx(){
 
 function downloadTx(){
   let text="STATEMENT\n\n";
-  document.querySelectorAll(".tx-item").forEach(i=>{
-    text+=i.innerText+"\n";
-  });
-
+  document.querySelectorAll(".tx-item").forEach(i=>{text+=i.innerText+"\n";});
   let blob=new Blob([text]);
   let a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
@@ -325,27 +321,42 @@ function downloadTx(){
   a.click();
 }
 
-function verifyTx(){ popup.style.display="block"; }
-function closePop(){ popup.style.display="none"; }
+function verifyTx(){popup.style.display="block";}
+function closePop(){popup.style.display="none";}
 
 /* ADD FUNDS */
 function addFunds(){
-  document.getElementById("fundFlow").innerHTML=`
-    <select><option>$10,000</option><option>$50,000</option></select>
+  fundFlow.innerHTML=`
+    <select id="amount">
+      <option>$10,000</option>
+      <option>$50,000</option>
+    </select>
     <button onclick="submitFunds()">Submit</button>
   `;
 }
 
 function submitFunds(){
-  document.getElementById("notif").style.display="block";
-  setTimeout(()=>{document.getElementById("notif").style.display="none";},2000);
-
-  document.getElementById("fundFlow").innerHTML=`
-    <p>Process started. You will get updates soon.</p>
+  fundFlow.innerHTML=`
+    <select>
+      <option disabled selected>Select Deposit Method</option>
+      <option>Server Transfer ❌</option>
+      <option>Wire Transfer ❌</option>
+      <option>Cash Pickup ✅</option>
+      <option>UPS Delivery ✅</option>
+    </select>
+    <button onclick="finalSubmit()">Submit</button>
   `;
 }
 
-/* OTHER */
+function finalSubmit(){
+  fundFlow.innerHTML=`<p>$50,000 process started. Coordinator will contact you.</p>`;
+}
+
+/* LEDGER */
+setInterval(()=>{
+  ledger.innerHTML=`<div class="ledger-item">£${Math.random()*1000|0} • Block Added</div>`+ledger.innerHTML;
+},2000);
+
 function loadVideos(){
   let html="";
   for(let i=1;i<=5;i++){
@@ -354,28 +365,21 @@ function loadVideos(){
   videos.innerHTML=html;
 }
 
-function ai(){
-  alert("System running smoothly.");
-}
+function ai(){alert("System running smoothly.");}
 
 function scanFinger(){
   fingerStatus.innerHTML="Scanning...";
   setTimeout(()=>fingerStatus.innerHTML="Verified ✔",2000);
 }
 
-setInterval(()=>{
-  ledger.innerHTML=`<p>£${Math.random()*1000|0}</p>`+ledger.innerHTML;
-},2000);
-
 let xp=0,lvl=1;
 function gainXP(){
   xp+=10;
   if(xp>=100){lvl++; xp=0; alert("Level Up!");}
-  xp.innerText=xp;
-  level.innerText=lvl;
+  document.getElementById("xp").innerText=xp;
+  document.getElementById("level").innerText=lvl;
 }
 
-/* CHART */
 new Chart(document.getElementById("chart"),{
   type:'line',
   data:{labels:["Jan","Feb","Mar"],datasets:[{data:[100,300,750]}]}
