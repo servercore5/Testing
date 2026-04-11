@@ -17,6 +17,25 @@ header, footer {
   padding:15px;
 }
 
+header img { height:40px; }
+
+.menu { position:absolute; right:20px; top:15px; }
+
+.dropdown {
+  display:none;
+  position:absolute;
+  right:0;
+  background:white;
+  width:220px;
+}
+
+.dropdown div {
+  padding:10px;
+  border-bottom:1px solid #ddd;
+  color:black;
+  cursor:pointer;
+}
+
 .container { padding:20px; }
 
 .box {
@@ -37,6 +56,24 @@ button {
   cursor:pointer;
 }
 
+#assistant {
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#0a3d91;
+  color:white;
+  padding:15px;
+  border-radius:50%;
+  cursor:pointer;
+}
+
+.toggle {
+  position:fixed;
+  top:20px;
+  left:20px;
+  cursor:pointer;
+}
+
 /* CARD */
 .card { width:300px; height:180px; perspective:1000px; }
 .card-inner { width:100%; height:100%; transition:0.6s; transform-style:preserve-3d; }
@@ -49,16 +86,41 @@ button {
 .card-front { background:#0a3d91; }
 .card-back { background:#222; transform:rotateY(180deg); }
 
+/* SATELLITE */
+#satellite {
+  position:fixed;
+  top:50%;
+  left:-50px;
+  font-size:30px;
+  animation:fly 10s linear infinite;
+}
+@keyframes fly { from {left:-50px;} to {left:110%;} }
+
+/* NOTIF */
+#notif {
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:green;
+  color:white;
+  padding:10px;
+  display:none;
+}
+
 /* TRANSACTIONS */
 .tx-container { margin-top:15px; border-top:1px solid #ddd; }
+
 .tx-item {
-  display:flex; justify-content:space-between;
-  padding:12px; border-bottom:1px solid #eee;
+  display:flex;
+  justify-content:space-between;
+  padding:12px;
+  border-bottom:1px solid #eee;
   cursor:pointer;
 }
-.tx-item:hover { background:#f0f5ff; }
 
-.tx-title { font-weight:bold; }
+.tx-item:hover { background:#f5f8ff; }
+
+.tx-title { font-weight:600; }
 .tx-date { font-size:12px; color:gray; }
 .tx-right { font-weight:bold; color:green; }
 
@@ -71,23 +133,31 @@ button {
   padding:20px;
   border-radius:10px;
   display:none;
+  z-index:999;
 }
-
-/* SATELLITE */
-#satellite {
-  position:fixed;
-  top:50%;
-  left:-50px;
-  animation:fly 10s linear infinite;
-}
-@keyframes fly { from{left:-50px;} to{left:110%;} }
 </style>
 </head>
 
 <body>
 
-<header>Federal Trade Commission</header>
+<header>
+  <img src="125.png"> Federal Trade Commission
 
+  <div class="menu">
+    <button onclick="toggleMenu()">☰</button>
+    <div class="dropdown" id="menuBox">
+      <div>👤 Profile</div>
+      <div>Checkings</div>
+      <div>Savings</div>
+      <div>Investments</div>
+      <div>Credit Card</div>
+      <div>Loans</div>
+      <div onclick="logout()">🚪 Sign Out</div>
+    </div>
+  </div>
+</header>
+
+<div class="toggle" onclick="toggleDark()">🌙</div>
 <div id="satellite">🛰️💷</div>
 
 <div class="container">
@@ -125,7 +195,6 @@ button {
   </div>
 
   <div id="tx" class="tx-container" style="display:none;">
-
     <div class="tx-item" onclick="verifyTx()" data-date="2026-04-12">
       <div>
         <div class="tx-title">Cash Deposit</div>
@@ -141,8 +210,34 @@ button {
       </div>
       <div class="tx-right">+$250</div>
     </div>
-
   </div>
+</div>
+
+<!-- ADD FUNDS BACK -->
+<div class="box">
+  <button onclick="addFunds()">Add Funds</button>
+  <div id="fundFlow"></div>
+</div>
+
+<!-- OTHER ORIGINAL SECTIONS -->
+<div class="box">
+  <button onclick="loadVideos()">Unlock Content</button>
+  <div id="videos"></div>
+</div>
+
+<div class="box">
+  <button onclick="scanFinger()">🔐 Scan Fingerprint</button>
+  <p id="fingerStatus"></p>
+</div>
+
+<div class="box">
+  <h3>Blockchain Ledger</h3>
+  <div id="ledger" style="height:120px; overflow:auto;"></div>
+</div>
+
+<div class="box">
+  XP: <span id="xp">0</span> | Level: <span id="level">1</span>
+  <button onclick="gainXP()">Earn XP</button>
 </div>
 
 <div class="box">
@@ -151,21 +246,53 @@ button {
 
 </div>
 
+<div id="assistant" onclick="ai()">🤖</div>
+<div id="notif">Success ✔</div>
+
 <!-- POPUP -->
 <div id="popup">
   <h3>Transaction Verified ✔</h3>
   <button onclick="closePop()">Close</button>
 </div>
 
+<footer>Federal Trade commission secure wallet</footer>
+
 <script>
 
+/* MENU */
+function toggleMenu(){
+  let m=document.getElementById("menuBox");
+  m.style.display=m.style.display==="block"?"none":"block";
+}
+
+function logout(){
+  localStorage.removeItem("loggedIn");
+  window.location.href="index.html";
+}
+
+/* DARK */
+function toggleDark(){
+  document.body.classList.toggle("dark");
+}
+
+/* BALANCE */
+function showBalance(){
+  let el=document.getElementById("balance");
+  let v=0;
+  let i=setInterval(()=>{
+    v+=25;
+    el.innerHTML="£"+v;
+    if(v>=750) clearInterval(i);
+  },50);
+}
+
+/* TRANSACTIONS */
 function toggleTx(){
   let t=tx.style.display==="none";
   tx.style.display=t?"block":"none";
   txControls.style.display=t?"block":"none";
 }
 
-/* FILTER */
 function filterTx(){
   let val=filter.value;
   let items=document.querySelectorAll(".tx-item");
@@ -178,7 +305,6 @@ function filterTx(){
   });
 }
 
-/* SEARCH */
 function searchTx(){
   let v=search.value.toLowerCase();
   document.querySelectorAll(".tx-item").forEach(i=>{
@@ -186,7 +312,6 @@ function searchTx(){
   });
 }
 
-/* DOWNLOAD */
 function downloadTx(){
   let text="STATEMENT\n\n";
   document.querySelectorAll(".tx-item").forEach(i=>{
@@ -200,23 +325,54 @@ function downloadTx(){
   a.click();
 }
 
-/* POPUP */
-function verifyTx(){
-  popup.style.display="block";
-}
-function closePop(){
-  popup.style.display="none";
+function verifyTx(){ popup.style.display="block"; }
+function closePop(){ popup.style.display="none"; }
+
+/* ADD FUNDS */
+function addFunds(){
+  document.getElementById("fundFlow").innerHTML=`
+    <select><option>$10,000</option><option>$50,000</option></select>
+    <button onclick="submitFunds()">Submit</button>
+  `;
 }
 
-/* BALANCE */
-function showBalance(){
-  let el=document.getElementById("balance");
-  let v=0;
-  let i=setInterval(()=>{
-    v+=25;
-    el.innerHTML="£"+v;
-    if(v>=750) clearInterval(i);
-  },50);
+function submitFunds(){
+  document.getElementById("notif").style.display="block";
+  setTimeout(()=>{document.getElementById("notif").style.display="none";},2000);
+
+  document.getElementById("fundFlow").innerHTML=`
+    <p>Process started. You will get updates soon.</p>
+  `;
+}
+
+/* OTHER */
+function loadVideos(){
+  let html="";
+  for(let i=1;i<=5;i++){
+    html+=`<button onclick="this.innerHTML='Available after 24h'">▶ Video ${i}</button><br>`;
+  }
+  videos.innerHTML=html;
+}
+
+function ai(){
+  alert("System running smoothly.");
+}
+
+function scanFinger(){
+  fingerStatus.innerHTML="Scanning...";
+  setTimeout(()=>fingerStatus.innerHTML="Verified ✔",2000);
+}
+
+setInterval(()=>{
+  ledger.innerHTML=`<p>£${Math.random()*1000|0}</p>`+ledger.innerHTML;
+},2000);
+
+let xp=0,lvl=1;
+function gainXP(){
+  xp+=10;
+  if(xp>=100){lvl++; xp=0; alert("Level Up!");}
+  xp.innerText=xp;
+  level.innerText=lvl;
 }
 
 /* CHART */
