@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FTC secure wallet</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body { margin:0; font-family:Arial; background:#eef2f7; transition:0.3s;}
+.dark { background:#121212; color:white;}
+
+header, footer {
+  background:#0a3d91;
+  color:white;
+  padding:15px;
+}
+
+.container { padding:20px; }
+
+.box {
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  margin:15px 0;
+}
+
+.dark .box { background:#1e1e1e; }
+
+button {
+  padding:10px;
+  margin-top:10px;
+  background:#0a3d91;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+/* TRANSACTIONS */
+.tx-container { margin-top:15px; border-top:1px solid #ddd; }
+.tx-item {
+  display:flex; justify-content:space-between;
+  padding:12px; border-bottom:1px solid #eee;
+  cursor:pointer;
+}
+.tx-item:hover { background:#f0f5ff; }
+.tx-title { font-weight:bold; }
+.tx-date { font-size:12px; color:gray; }
+.tx-right { font-weight:bold; color:green; }
+
+/* POPUP */
+#popup {
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  display:none;
+  z-index:999;
+}
+
+/* LIVE NOTIF */
+#live {
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  background:green;
+  color:white;
+  padding:10px;
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>Federal Trade Commission</header>
+
+<div class="container">
+
+<div class="box">
+  <button onclick="toggleTx()">View Transactions</button>
+
+  <div id="txControls" style="display:none;">
+    <select id="filter" onchange="filterTx()">
+      <option value="all">All</option>
+      <option value="7">Last 7 Days</option>
+      <option value="30">Last 30 Days</option>
+    </select>
+
+    <input id="search" placeholder="Search..." onkeyup="searchTx()">
+    <button onclick="downloadTx()">📥 Download</button>
+  </div>
+
+  <div id="tx" class="tx-container" style="display:none;">
+    <div class="tx-item" onclick="verifyTx(this)" data-date="2026-04-12">
+      <div>
+        <div class="tx-title">Cash Deposit</div>
+        <div class="tx-date">12-04-2026</div>
+      </div>
+      <div class="tx-right">+$50,000</div>
+    </div>
+
+    <div class="tx-item" onclick="verifyTx(this)" data-date="2026-04-11">
+      <div>
+        <div class="tx-title">Case Compensation</div>
+        <div class="tx-date">11-04-2026</div>
+      </div>
+      <div class="tx-right">+$250</div>
+    </div>
+  </div>
+</div>
+
+<div class="box">
+  <canvas id="chart"></canvas>
+</div>
+
+</div>
+
+<!-- POPUP -->
+<div id="popup">
+  <h3>Transaction Verified ✔</h3>
+  <p>This transaction is secure and verified.</p>
+  <button onclick="closePop()">Close</button>
+</div>
+
+<div id="live">New Deposit Received 💸</div>
+
+<script>
+
+/* TOGGLE */
+function toggleTx(){
+  let t=tx.style.display==="none";
+  tx.style.display=t?"block":"none";
+  txControls.style.display=t?"block":"none";
+}
+
+/* FILTER */
+function filterTx(){
+  let val=filter.value;
+  let items=document.querySelectorAll(".tx-item");
+  let today=new Date();
+
+  items.forEach(i=>{
+    let d=new Date(i.dataset.date);
+    let diff=(today-d)/(1000*60*60*24);
+    i.style.display=(val==="all" || diff<=val)?"flex":"none";
+  });
+}
+
+/* SEARCH */
+function searchTx(){
+  let v=search.value.toLowerCase();
+  document.querySelectorAll(".tx-item").forEach(i=>{
+    i.style.display=i.innerText.toLowerCase().includes(v)?"flex":"none";
+  });
+}
+
+/* DOWNLOAD */
+function downloadTx(){
+  let text="FTC BANK STATEMENT\n\n";
+  document.querySelectorAll(".tx-item").forEach(i=>{
+    text+=i.innerText+"\n";
+  });
+
+  let blob=new Blob([text]);
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="statement.txt";
+  a.click();
+}
+
+/* VERIFY POPUP */
+function verifyTx(el){
+  popup.style.display="block";
+}
+
+/* CLOSE POP */
+function closePop(){
+  popup.style.display="none";
+}
+
+/* CHART AUTO UPDATE */
+let chart=new Chart(document.getElementById("chart"),{
+  type:'line',
+  data:{labels:["Start"],datasets:[{data:[0]}]}
+});
+
+function updateChart(val){
+  chart.data.labels.push("Tx");
+  chart.data.datasets[0].data.push(val);
+  chart.update();
+}
+
+/* LIVE TRANSACTION */
+setInterval(()=>{
+  let amt=Math.floor(Math.random()*500+50);
+
+  live.innerText="New Deposit: $"+amt;
+  live.style.display="block";
+
+  setTimeout(()=>live.style.display="none",2000);
+
+  let div=document.createElement("div");
+  div.className="tx-item";
+  div.innerHTML=`
+    <div>
+      <div class="tx-title">Live Deposit</div>
+      <div class="tx-date">${new Date().toLocaleDateString()}</div>
+    </div>
+    <div class="tx-right">+$${amt}</div>
+  `;
+
+  document.getElementById("tx").prepend(div);
+  updateChart(amt);
+
+},8000);
+
+</script>
+
+</body>
+</html>
