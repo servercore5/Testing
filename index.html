@@ -11,20 +11,22 @@
 body { margin:0; font-family:Arial; background:#eef2f7; transition:0.3s;}
 .dark { background:#121212; color:white;}
 
-header, footer {
+header {
   background:#0a3d91;
   color:white;
-  padding:15px;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-header img { height:40px; }
-
-.menu { position:absolute; right:20px; top:15px; }
+.menu { position:relative; }
 
 .dropdown {
   display:none;
   position:absolute;
   right:0;
+  top:40px;
   background:white;
   width:220px;
 }
@@ -36,13 +38,18 @@ header img { height:40px; }
   cursor:pointer;
 }
 
-.container { padding:20px; }
+.container {
+  padding:20px;
+  max-width:900px;
+  margin:auto;
+}
 
 .box {
   background:white;
   padding:20px;
   border-radius:10px;
-  margin:15px 0;
+  margin:20px 0;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
 }
 
 .dark .box { background:#1e1e1e; }
@@ -56,6 +63,12 @@ button {
   cursor:pointer;
 }
 
+input, select {
+  padding:8px;
+  width:100%;
+  margin-top:5px;
+}
+
 #assistant {
   position:fixed;
   bottom:20px;
@@ -64,7 +77,6 @@ button {
   color:white;
   padding:15px;
   border-radius:50%;
-  cursor:pointer;
 }
 
 .toggle {
@@ -75,7 +87,7 @@ button {
 }
 
 /* CARD */
-.card { width:300px; height:180px; perspective:1000px; }
+.card { width:100%; max-width:320px; height:180px; perspective:1000px; }
 .card-inner { width:100%; height:100%; transition:0.6s; transform-style:preserve-3d; }
 .card:hover .card-inner { transform:rotateY(180deg); }
 .card-front, .card-back {
@@ -91,21 +103,9 @@ button {
   position:fixed;
   top:50%;
   left:-50px;
-  font-size:30px;
   animation:fly 10s linear infinite;
 }
-@keyframes fly { from {left:-50px;} to {left:110%;} }
-
-/* NOTIF */
-#notif {
-  position:fixed;
-  top:20px;
-  right:20px;
-  background:green;
-  color:white;
-  padding:10px;
-  display:none;
-}
+@keyframes fly { from{left:-50px;} to{left:110%;} }
 
 /* TRANSACTIONS */
 .tx-container { margin-top:15px; border-top:1px solid #ddd; }
@@ -114,7 +114,6 @@ button {
   justify-content:space-between;
   padding:12px;
   border-bottom:1px solid #eee;
-  cursor:pointer;
 }
 .tx-item:hover { background:#f5f8ff; }
 .tx-title { font-weight:600; }
@@ -140,7 +139,6 @@ button {
   padding:20px;
   border-radius:10px;
   display:none;
-  z-index:999;
 }
 </style>
 </head>
@@ -148,8 +146,7 @@ button {
 <body>
 
 <header>
-  <img src="125.png"> Federal Trade Commission
-
+  <div>Federal Trade Commission</div>
   <div class="menu">
     <button onclick="toggleMenu()">☰</button>
     <div class="dropdown" id="menuBox">
@@ -171,13 +168,8 @@ button {
 
 <div class="card">
   <div class="card-inner">
-    <div class="card-front">
-      💳 Premium Card<br><br>
-      1200 3478 6766 7776
-    </div>
-    <div class="card-back">
-      CVV: 987<br>Exp: 12/28
-    </div>
+    <div class="card-front">💳 Premium Card<br><br>1200 3478 6766 7776</div>
+    <div class="card-back">CVV: 987<br>Exp: 12/28</div>
   </div>
 </div>
 
@@ -188,201 +180,155 @@ button {
 
 <!-- TRANSACTIONS -->
 <div class="box">
-  <button onclick="toggleTx()">View Transactions</button>
+<button onclick="toggleTx()">View Transactions</button>
 
-  <div id="txControls" style="display:none;">
-    <select id="filter" onchange="filterTx()">
-      <option value="all">All</option>
-      <option value="7">Last 7 Days</option>
-      <option value="30">Last 30 Days</option>
-    </select>
+<div id="txControls" style="display:none;">
+<select id="filter" onchange="filterTx()">
+<option value="all">All</option>
+<option value="7">Last 7 Days</option>
+<option value="30">Last 30 Days</option>
+</select>
+<input id="search" placeholder="Search..." onkeyup="searchTx()">
+<button onclick="downloadTx()">📥 Download</button>
+</div>
 
-    <input id="search" placeholder="Search..." onkeyup="searchTx()">
-    <button onclick="downloadTx()">📥 Download</button>
-  </div>
-
-  <div id="tx" class="tx-container" style="display:none;">
-    <div class="tx-item" onclick="verifyTx()" data-date="2026-04-12">
-      <div><div class="tx-title">Cash Deposit</div><div class="tx-date">12-04-2026 • 04:59 PM</div></div>
-      <div class="tx-right">+$50,000</div>
-    </div>
-
-    <div class="tx-item" onclick="verifyTx()" data-date="2026-04-11">
-      <div><div class="tx-title">Case Compensation</div><div class="tx-date">11-04-2026 • 08:34 AM</div></div>
-      <div class="tx-right">+$250</div>
-    </div>
-
-    <div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">04-04-2026 • 09:57 AM</div></div><div class="tx-right">+$250</div></div>
-    <div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">28-03-2026 • 05:11 PM</div></div><div class="tx-right">+$250</div></div>
-    <div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">21-03-2026 • 03:34 PM</div></div><div class="tx-right">+$250</div></div>
-  </div>
+<div id="tx" class="tx-container" style="display:none;">
+<div class="tx-item"><div><div class="tx-title">Cash Deposit</div><div class="tx-date">12-04-2026 • 04:59 PM</div></div><div class="tx-right">+$50,000</div></div>
+<div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">11-04-2026 • 08:34 AM</div></div><div class="tx-right">+$250</div></div>
+<div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">04-04-2026 • 09:57 AM</div></div><div class="tx-right">+$250</div></div>
+<div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">28-03-2026 • 05:11 PM</div></div><div class="tx-right">+$250</div></div>
+<div class="tx-item"><div><div class="tx-title">Case Compensation</div><div class="tx-date">21-03-2026 • 03:34 PM</div></div><div class="tx-right">+$250</div></div>
+</div>
 </div>
 
 <!-- GRAPH -->
-<div class="box">
-  <canvas id="chart"></canvas>
-</div>
+<div class="box"><canvas id="chart"></canvas></div>
 
 <!-- ADD FUNDS -->
 <div class="box">
-  <button onclick="addFunds()">Add Funds</button>
-  <div id="fundFlow"></div>
+<button onclick="addFunds()">Add Funds</button>
+<div id="fundFlow"></div>
 </div>
 
 <!-- MONEY TRANSFER -->
 <div class="box">
-  <h3>Money Transfer</h3>
-  <input placeholder="Account Number"><br><br>
-  <input placeholder="Bank Name"><br><br>
-  <input placeholder="Amount"><br><br>
-  <button onclick="alert('Transfer Initiated ✔')">Transfer</button>
+<h3>Money Transfer</h3>
+<button onclick="startTransfer()">Start Transfer</button>
+<div id="transferFlow"></div>
 </div>
 
 <!-- LEDGER -->
 <div class="box">
-  <h3>Blockchain Ledger</h3>
-  <div id="ledger" class="ledger-box"></div>
-</div>
-
-<!-- OTHER -->
-<div class="box">
-  <button onclick="loadVideos()">Unlock Content</button>
-  <div id="videos"></div>
-</div>
-
-<div class="box">
-  <button onclick="scanFinger()">🔐 Scan Fingerprint</button>
-  <p id="fingerStatus"></p>
-</div>
-
-<div class="box">
-  XP: <span id="xp">0</span> | Level: <span id="level">1</span>
-  <button onclick="gainXP()">Earn XP</button>
+<h3>Blockchain Ledger</h3>
+<div id="ledger" class="ledger-box"></div>
 </div>
 
 </div>
 
-<div id="assistant" onclick="ai()">🤖</div>
-<div id="notif">Success ✔</div>
+<div id="assistant">🤖</div>
 
 <div id="popup">
-  <h3>Transaction Verified ✔</h3>
-  <button onclick="closePop()">Close</button>
+<h3>Transaction Verified ✔</h3>
+<button onclick="closePop()">Close</button>
 </div>
-
-<footer>Federal Trade commission secure wallet</footer>
 
 <script>
 
 function toggleMenu(){menuBox.style.display=menuBox.style.display==="block"?"none":"block";}
-function logout(){localStorage.removeItem("loggedIn");window.location.href="index.html";}
 function toggleDark(){document.body.classList.toggle("dark");}
 
 function showBalance(){
-  let v=0;
-  let i=setInterval(()=>{
-    v+=25;
-    balance.innerHTML="£"+v;
-    if(v>=750) clearInterval(i);
-  },50);
+let v=0;
+let i=setInterval(()=>{
+v+=25;
+balance.innerHTML="£"+v;
+if(v>=750) clearInterval(i);
+},50);
 }
 
 function toggleTx(){
-  let t=tx.style.display==="none";
-  tx.style.display=t?"block":"none";
-  txControls.style.display=t?"block":"none";
+tx.style.display=tx.style.display==="none"?"block":"none";
+txControls.style.display=txControls.style.display==="none"?"block":"none";
 }
 
 function filterTx(){
-  let val=filter.value;
-  let items=document.querySelectorAll(".tx-item");
-  let today=new Date();
-  items.forEach(i=>{
-    let d=new Date(i.dataset.date);
-    let diff=(today-d)/(1000*60*60*24);
-    i.style.display=(val==="all"||diff<=val)?"flex":"none";
-  });
+let val=filter.value;
+let items=document.querySelectorAll(".tx-item");
+let today=new Date();
+items.forEach(i=>{
+let d=new Date("2026-04-12");
+let diff=(today-d)/(1000*60*60*24);
+i.style.display=(val==="all"||diff<=val)?"flex":"none";
+});
 }
 
 function searchTx(){
-  let v=search.value.toLowerCase();
-  document.querySelectorAll(".tx-item").forEach(i=>{
-    i.style.display=i.innerText.toLowerCase().includes(v)?"flex":"none";
-  });
+let v=search.value.toLowerCase();
+document.querySelectorAll(".tx-item").forEach(i=>{
+i.style.display=i.innerText.toLowerCase().includes(v)?"flex":"none";
+});
 }
 
 function downloadTx(){
-  let text="STATEMENT\n\n";
-  document.querySelectorAll(".tx-item").forEach(i=>{text+=i.innerText+"\n";});
-  let blob=new Blob([text]);
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="statement.txt";
-  a.click();
+let text="STATEMENT\n\n";
+document.querySelectorAll(".tx-item").forEach(i=>{text+=i.innerText+"\n";});
+let blob=new Blob([text]);
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="statement.txt";
+a.click();
 }
-
-function verifyTx(){popup.style.display="block";}
-function closePop(){popup.style.display="none";}
 
 /* ADD FUNDS */
 function addFunds(){
-  fundFlow.innerHTML=`
-    <select id="amount">
-      <option>$10,000</option>
-      <option>$50,000</option>
-    </select>
-    <button onclick="submitFunds()">Submit</button>
-  `;
+fundFlow.innerHTML=`
+<select><option>$10,000</option><option>$50,000</option></select>
+<button onclick="submitFunds()">Submit</button>
+`;
 }
-
 function submitFunds(){
-  fundFlow.innerHTML=`
-    <select>
-      <option disabled selected>Select Deposit Method</option>
-      <option>Server Transfer ❌</option>
-      <option>Wire Transfer ❌</option>
-      <option>Cash Pickup ✅</option>
-      <option>UPS Delivery ✅</option>
-    </select>
-    <button onclick="finalSubmit()">Submit</button>
-  `;
+fundFlow.innerHTML=`
+<select>
+<option>Select Method</option>
+<option>Cash Pickup</option>
+<option>UPS</option>
+</select>
+<button onclick="finalSubmit()">Submit</button>
+`;
+}
+function finalSubmit(){
+fundFlow.innerHTML=`<p>Process Started ✔</p>`;
 }
 
-function finalSubmit(){
-  fundFlow.innerHTML=`<p>$50,000 process started. Coordinator will contact you.</p>`;
+/* TRANSFER */
+function startTransfer(){
+transferFlow.innerHTML=`
+<input placeholder="Full Name">
+<input placeholder="Bank Name">
+<input placeholder="Account Number">
+<input placeholder="Routing Number">
+<button onclick="nextTransfer()">Next</button>
+`;
+}
+function nextTransfer(){
+transferFlow.innerHTML=`
+<input placeholder="Amount">
+<input placeholder="Note">
+<button onclick="confirmTransfer()">Confirm</button>
+`;
+}
+function confirmTransfer(){
+transferFlow.innerHTML=`Transfer Successful ✔`;
 }
 
 /* LEDGER */
 setInterval(()=>{
-  ledger.innerHTML=`<div class="ledger-item">£${Math.random()*1000|0} • Block Added</div>`+ledger.innerHTML;
+ledger.innerHTML=`<div class="ledger-item">£${Math.random()*1000|0}</div>`+ledger.innerHTML;
 },2000);
 
-function loadVideos(){
-  let html="";
-  for(let i=1;i<=5;i++){
-    html+=`<button onclick="this.innerHTML='Available after 24h'">▶ Video ${i}</button><br>`;
-  }
-  videos.innerHTML=html;
-}
-
-function ai(){alert("System running smoothly.");}
-
-function scanFinger(){
-  fingerStatus.innerHTML="Scanning...";
-  setTimeout(()=>fingerStatus.innerHTML="Verified ✔",2000);
-}
-
-let xp=0,lvl=1;
-function gainXP(){
-  xp+=10;
-  if(xp>=100){lvl++; xp=0; alert("Level Up!");}
-  document.getElementById("xp").innerText=xp;
-  document.getElementById("level").innerText=lvl;
-}
-
 new Chart(document.getElementById("chart"),{
-  type:'line',
-  data:{labels:["Jan","Feb","Mar"],datasets:[{data:[100,300,750]}]}
+type:'line',
+data:{labels:["Jan","Feb","Mar"],datasets:[{data:[100,300,750]}]}
 });
 
 </script>
