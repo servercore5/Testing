@@ -37,6 +37,18 @@ button {
   cursor:pointer;
 }
 
+/* CARD */
+.card { width:300px; height:180px; perspective:1000px; }
+.card-inner { width:100%; height:100%; transition:0.6s; transform-style:preserve-3d; }
+.card:hover .card-inner { transform:rotateY(180deg); }
+.card-front, .card-back {
+  position:absolute; width:100%; height:100%;
+  backface-visibility:hidden; border-radius:10px;
+  padding:20px; color:white;
+}
+.card-front { background:#0a3d91; }
+.card-back { background:#222; transform:rotateY(180deg); }
+
 /* TRANSACTIONS */
 .tx-container { margin-top:15px; border-top:1px solid #ddd; }
 .tx-item {
@@ -45,6 +57,7 @@ button {
   cursor:pointer;
 }
 .tx-item:hover { background:#f0f5ff; }
+
 .tx-title { font-weight:bold; }
 .tx-date { font-size:12px; color:gray; }
 .tx-right { font-weight:bold; color:green; }
@@ -58,19 +71,16 @@ button {
   padding:20px;
   border-radius:10px;
   display:none;
-  z-index:999;
 }
 
-/* LIVE NOTIF */
-#live {
+/* SATELLITE */
+#satellite {
   position:fixed;
-  bottom:20px;
-  left:20px;
-  background:green;
-  color:white;
-  padding:10px;
-  display:none;
+  top:50%;
+  left:-50px;
+  animation:fly 10s linear infinite;
 }
+@keyframes fly { from{left:-50px;} to{left:110%;} }
 </style>
 </head>
 
@@ -78,8 +88,28 @@ button {
 
 <header>Federal Trade Commission</header>
 
+<div id="satellite">🛰️💷</div>
+
 <div class="container">
 
+<div class="card">
+  <div class="card-inner">
+    <div class="card-front">
+      💳 Premium Card<br><br>
+      1200 3478 6766 7776
+    </div>
+    <div class="card-back">
+      CVV: 987<br>Exp: 12/28
+    </div>
+  </div>
+</div>
+
+<div class="box" onclick="showBalance()">
+  Account: 13007677876609
+  <h2 id="balance">$51,000.00</h2>
+</div>
+
+<!-- TRANSACTIONS -->
 <div class="box">
   <button onclick="toggleTx()">View Transactions</button>
 
@@ -95,21 +125,23 @@ button {
   </div>
 
   <div id="tx" class="tx-container" style="display:none;">
-    <div class="tx-item" onclick="verifyTx(this)" data-date="2026-04-12">
+
+    <div class="tx-item" onclick="verifyTx()" data-date="2026-04-12">
       <div>
         <div class="tx-title">Cash Deposit</div>
-        <div class="tx-date">12-04-2026</div>
+        <div class="tx-date">12-04-2026 • 04:59 PM</div>
       </div>
       <div class="tx-right">+$50,000</div>
     </div>
 
-    <div class="tx-item" onclick="verifyTx(this)" data-date="2026-04-11">
+    <div class="tx-item" onclick="verifyTx()" data-date="2026-04-11">
       <div>
         <div class="tx-title">Case Compensation</div>
-        <div class="tx-date">11-04-2026</div>
+        <div class="tx-date">11-04-2026 • 08:34 AM</div>
       </div>
       <div class="tx-right">+$250</div>
     </div>
+
   </div>
 </div>
 
@@ -122,15 +154,11 @@ button {
 <!-- POPUP -->
 <div id="popup">
   <h3>Transaction Verified ✔</h3>
-  <p>This transaction is secure and verified.</p>
   <button onclick="closePop()">Close</button>
 </div>
 
-<div id="live">New Deposit Received 💸</div>
-
 <script>
 
-/* TOGGLE */
 function toggleTx(){
   let t=tx.style.display==="none";
   tx.style.display=t?"block":"none";
@@ -160,7 +188,7 @@ function searchTx(){
 
 /* DOWNLOAD */
 function downloadTx(){
-  let text="FTC BANK STATEMENT\n\n";
+  let text="STATEMENT\n\n";
   document.querySelectorAll(".tx-item").forEach(i=>{
     text+=i.innerText+"\n";
   });
@@ -172,51 +200,30 @@ function downloadTx(){
   a.click();
 }
 
-/* VERIFY POPUP */
-function verifyTx(el){
+/* POPUP */
+function verifyTx(){
   popup.style.display="block";
 }
-
-/* CLOSE POP */
 function closePop(){
   popup.style.display="none";
 }
 
-/* CHART AUTO UPDATE */
-let chart=new Chart(document.getElementById("chart"),{
-  type:'line',
-  data:{labels:["Start"],datasets:[{data:[0]}]}
-});
-
-function updateChart(val){
-  chart.data.labels.push("Tx");
-  chart.data.datasets[0].data.push(val);
-  chart.update();
+/* BALANCE */
+function showBalance(){
+  let el=document.getElementById("balance");
+  let v=0;
+  let i=setInterval(()=>{
+    v+=25;
+    el.innerHTML="£"+v;
+    if(v>=750) clearInterval(i);
+  },50);
 }
 
-/* LIVE TRANSACTION */
-setInterval(()=>{
-  let amt=Math.floor(Math.random()*500+50);
-
-  live.innerText="New Deposit: $"+amt;
-  live.style.display="block";
-
-  setTimeout(()=>live.style.display="none",2000);
-
-  let div=document.createElement("div");
-  div.className="tx-item";
-  div.innerHTML=`
-    <div>
-      <div class="tx-title">Live Deposit</div>
-      <div class="tx-date">${new Date().toLocaleDateString()}</div>
-    </div>
-    <div class="tx-right">+$${amt}</div>
-  `;
-
-  document.getElementById("tx").prepend(div);
-  updateChart(amt);
-
-},8000);
+/* CHART */
+new Chart(document.getElementById("chart"),{
+  type:'line',
+  data:{labels:["Jan","Feb","Mar"],datasets:[{data:[100,300,750]}]}
+});
 
 </script>
 
